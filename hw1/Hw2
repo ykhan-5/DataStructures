@@ -1,0 +1,322 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+#include "credentials.h"
+
+//mini-fxns
+int credentials::listSizeRecursive(node *curr) {
+  if (curr == nullptr) {
+    return 0;
+  }
+  return 1 + listSizeRecursive(curr->next);
+}
+
+bool credentials::isDuplicate(string name, int age){
+  node *temp = head;
+  while ((temp != nullptr) && ((temp->name != name) || (temp->age != age))){
+    temp = temp->next;
+  }
+
+  if (temp != nullptr){
+    //cout << "there is a duplicate, the name is " << name << "the age is " << age << endl;
+    return true;
+  }
+  return false;
+
+}
+
+void credentials::addAtBeginning(string creds){ 
+  string name;
+  int age;
+  float deposit;
+  int numDrinks;
+
+  //parse string and attach values to the variables
+  creds.erase(remove(creds.begin(), creds.end(), '\n'),
+                    creds.end());
+    creds.erase(remove(creds.begin(), creds.end(), '\r'),
+                    creds.end());
+
+    name = creds.substr(7, creds.find(';') - 7);
+
+    creds = creds.substr(creds.find(';') + 2);
+
+    age = stoi(creds.substr(5, creds.find(';') - 5));
+    creds = creds.substr(creds.find(';') + 2);
+
+    deposit = stoi(creds.substr(9, creds.find(';') - 9));
+    creds = creds.substr(creds.find(';') + 2);
+
+    numDrinks = stoi(creds.substr(18, creds.find(']') - 18));
+
+  node *curr = new node;
+  curr->name = name;
+  curr->age = age;
+  curr->deposit = deposit;
+  curr->numDrinks = numDrinks;
+  curr->next = nullptr;
+
+  if (isDuplicate(name, age) == true){
+    //Find the node and replace the values
+    node *searcher = head;
+    while ((searcher->name != name) || (searcher->age != age)){
+      searcher = searcher->next;
+    }
+    searcher->deposit = deposit;
+    searcher->numDrinks = numDrinks;
+  } else {
+
+  //if empty
+  if (head == nullptr){
+    head = curr; //changed this
+    //cout << "I just added-- " << name << " -- to the list at the beginning" << endl; 
+    return;
+  } else {
+
+  //else
+  curr->next = head;
+  head = curr;
+  //cout << "I just added-- " << name << " -- to the list at the beginning" << endl; 
+  }
+  }
+
+}
+
+void credentials::addSomewhere(int n, string creds){
+  string name;
+  int age;
+  float deposit;
+  int numDrinks;
+
+  //parse string and attach values to the variables
+  creds.erase(remove(creds.begin(), creds.end(), '\n'),
+                    creds.end());
+    creds.erase(remove(creds.begin(), creds.end(), '\r'),
+                    creds.end());
+
+    name = creds.substr(7, creds.find(';') - 7);
+
+    creds = creds.substr(creds.find(';') + 2);
+
+    age = stoi(creds.substr(5, creds.find(';') - 5));
+    creds = creds.substr(creds.find(';') + 2);
+
+    deposit = stoi(creds.substr(9, creds.find(';') - 9));
+    creds = creds.substr(creds.find(';') + 2);
+
+    numDrinks = stoi(creds.substr(18, creds.find(']') - 18));
+
+  node *curr = new node;
+  curr->name = name;
+  curr->age = age;
+  curr->deposit = deposit;
+  curr->numDrinks = numDrinks;
+  curr->next = nullptr;
+  
+  
+  if (isDuplicate(name, age) == true){
+    //Find the node and replace the values
+    node *searcher = head;
+    while ((searcher->name != name) || (searcher->age != age)){
+      searcher = searcher->next;
+    }
+    searcher->deposit = deposit;
+    searcher->numDrinks = numDrinks;
+  } else {
+
+  //if empty
+  if (head == nullptr){
+    head = curr;
+    return;
+  }
+  //else
+
+      //if n < sizeList --> put in place
+  if (n < listSizeRecursive(getHead())){
+    node *parse = head;
+    // (1) move to place
+    for (int i=0; i < n-1; i++){
+      parse = parse->next;
+    }
+    // (2) link the node
+    curr->next = parse->next;
+    parse->next = curr;
+
+    //cout << "I just added-- " << name << " -- to the list at " << n << endl;
+
+
+  }
+      //if n > sizeList --> put at end
+  if (n >= listSizeRecursive(getHead())){
+    // (1) move to end
+    node *parse = head;
+    for (int j=0; j < listSizeRecursive(getHead())-1; j++){
+      parse = parse->next;
+    }
+    // (2) link the node to the end
+    parse->next = curr;
+    curr->next = nullptr; //might not need this bc i never re-define curr->next
+
+
+    //cout << "I just added-- " << name << " -- to the list at the end" << endl;
+
+  }
+  }
+}
+
+
+// Printing
+void credentials::printList(ofstream &out) { // GOOD
+  //if (head != nullptr) {
+      node *curr = head;
+      while (curr != nullptr) {
+        out << "[name: " << curr->name << "; age: " << curr->age << "; deposit: " << curr->deposit << "; number of drinks: " << curr->numDrinks << "]" << endl;
+        curr = curr->next; // traversing
+    }
+  }
+
+
+
+//Adding
+  void credentials::add(int n, string creds){
+    if (n != 0){
+      addSomewhere(n,creds);
+    } else {
+      addAtBeginning(creds);
+    }
+  }
+  
+
+  //Removal
+  void credentials::del(string attr, int n){ // for age, deposit, numDrinks
+  
+    node *search = head;
+    node *prev = nullptr;
+    bool targetFound = false;
+    //move through the linked list
+
+    while (search != nullptr){
+        if (attr == "age") 
+    {
+        // search by age
+        if (search->age == n){
+          targetFound = true;
+        }
+    } else if (attr == "deposit") 
+    {
+        // search by deposit
+        if (search->deposit == n){
+         targetFound = true;
+        }
+    } else if (attr == "number of drinks") 
+    {
+        // search by numDrinks
+        if (search->numDrinks == n){
+          targetFound = true;
+        }
+    } else { return; } // if no attribute is there
+    
+    if (targetFound){
+      if (prev == nullptr){
+        head = search->next;
+      } else {
+        prev->next = search->next;
+      }
+
+      node * delNode = search;
+      search = search->next;
+      delete delNode;
+      targetFound = false;
+      
+    } else { 
+        prev = search;
+        search = search->next;
+    }
+    }
+  }
+  
+  void credentials::del(string attr, string n){ // for name
+       node *search = head;
+    node *prev = nullptr;
+    bool targetFound = false;
+    //move through the linked list
+
+    while (search != nullptr){
+        if (attr == "name") 
+    {
+        // search by age
+        if (search->name == n){
+          targetFound = true;
+        }
+    } else { return; } // if no attribute is there
+    
+    if (targetFound){
+      if (prev == nullptr){
+        head = search->next;
+      } else {
+        prev->next = search->next;
+      }
+
+      node * delNode = search;
+      search = search->next;
+      delete delNode;
+      targetFound = false;
+      
+    } else { 
+        prev = search;
+        search = search->next;
+    }
+    }
+  }
+  
+
+  //Sorting
+  void credentials::sort(string attribute) { // Credit to Eoin Donovan
+    if (head == nullptr || head->next == nullptr)
+      return;
+    bool isSorted = false;
+    while (!isSorted) {
+      isSorted = true;
+      node *cur = head;
+      node *prev = nullptr;
+      while (cur->next != nullptr) {
+        bool swap = false;
+        if (attribute == "name") {
+          if (cur->name > cur->next->name) {
+            swap = true;
+          }
+        } else if (attribute == "age") {
+          if (cur->age > cur->next->age) {
+            swap = true;
+          }
+        } else if (attribute == "deposit") {
+          if (cur->deposit > cur->next->deposit) {
+            swap = true;
+          }
+        } else if (attribute == "number of drinks") {
+          if (cur->numDrinks > cur->next->numDrinks) {
+            swap = true;
+          }
+        } else {
+          //cout << "Invalid Attribute." << endl;
+          return;
+        }
+        if (swap) {
+          isSorted = false;
+          node *temp = cur->next;
+          cur->next = cur->next->next;
+          temp->next = cur;
+          if (prev == nullptr) {
+            head = temp;
+          } else {
+            prev->next = temp;
+          }
+          prev = temp;
+        } else {
+          prev = cur;
+          cur = cur->next;
+        }
+      }
+    }
+  }
